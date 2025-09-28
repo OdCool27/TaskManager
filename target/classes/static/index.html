@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+        th { background-color: #f4f4f4; }
+        input, select { padding: 5px; margin: 5px 0; width: 100%; }
+        button { padding: 5px 10px; margin-top: 5px; cursor: pointer; }
+        .edit-btn { background-color: #4CAF50; color: white; }
+        .delete-btn { background-color: #f44336; color: white; }
+    </style>
+</head>
+<body>
+
+<h1>Task Manager</h1>
+
+<div>
+    <h3>Add / Edit Task</h3>
+    <input type="hidden" id="taskId">
+    <label>Title:</label>
+    <input type="text" id="title" placeholder="Task title">
+    <label>Description:</label>
+    <input type="text" id="description" placeholder="Task description">
+    <label>Due Date:</label>
+    <input type="date" id="dueDate">
+    <label>Status:</label>
+    <select id="status">
+        <option value="Pending">Pending</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Completed">Completed</option>
+    </select>
+    <button onclick="saveTask()">Save Task</button>
+</div>
+
+<h3>Tasks</h3>
+<table>
+    <thead>
+    <tr>
+        <th>Title</th>
+        <th>Description</th>
+        <th>Due Date</th>
+        <th>Status</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody id="tasksTable"></tbody>
+</table>
+
+<script>
+    const apiUrl = 'http://localhost:8080/api/tasks';
+
+    // Fetch all tasks on page load
+    window.onload = fetchTasks;
+
+    function fetchTasks() {
+        fetch(apiUrl)
+            .then(res => res.json())
+            .then(data => {
+                const table = document.getElementById('tasksTable');
+                table.innerHTML = '';
+                data.forEach(task => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                    <td>${task.title}</td>
+                    <td>${task.description}</td>
+                    <td>${task.dueDate}</td>
+                    <td>${task.status}</td>
+                    <td>
+                        <button class="edit-btn" onclick="editTask(${task.id})">Edit</button>
+                        <button class="delete-btn" onclick="deleteTask(${task.id})">Delete</button>
+                    </td>
+                `;
+                    table.appendChild(row);
+                });
+            });
+    }
+
+    function saveTask() {
+        const id = document.getElementById('taskId').value;
+        const taskData = {
+            title: document.getElementById('title').value,
+            description: document.getElementById('description').value,
+            dueDate: document.getElementById('dueDate').value,
+            status: document.getElementById('status').value
+        };
+
+        if (!taskData.title) {
+            alert('Title is required');
+            return;
+        }
+
+        if (id) {
+            // Update task
+            fetch(`${apiUrl}/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(taskData)
+            }).then(() => {
+                resetForm();
+                fetchTasks();
+            });
+        } else {
+            // Create new task
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(taskData)
+            }).then(() => {
+                resetForm();
+                fetchTasks();
+            });
+        }
+    }
+
+    function editTask(id) {
+        fetch(`${apiUrl}/${id}`)
+            .then(res => res.json())
+            .then(task => {
+                document.getElementById('taskId').value = task.id;
+                document.getElementById('title').value = task.title;
+                document.getElementById('description').value = task.description;
+                document.getElementById('dueDate').value = task.dueDate;
+                document.getElementById('status').value = task.status;
+            });
+    }
+
+    function deleteTask(id) {
+        if (confirm('Are you sure you want to delete this task?')) {
+            fetch(`${apiUrl}/${id}`, { method: 'DELETE' })
+                .then(() => fetchTasks());
+        }
+    }
+
+    function resetForm() {
+        document.getElementById('taskId').value = '';
+        document.getElementById('title').value = '';
+        document.getElementById('description').value = '';
+        document.getElementById('dueDate').value = '';
+        document.getElementById('status').value = 'Pending';
+    }
+</script>
+
+</body>
+</html>

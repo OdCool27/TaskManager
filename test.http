@@ -1,0 +1,30 @@
+### GET request to example server
+GET http://localhost:8080/api/tasks
+
+
+
+###
+POST http://localhost:8080/api/tasks
+Content-Type: application/json
+
+{
+    "title": "Finish Hibernate setup",
+    "description": "Configure the database and test CRUD",
+    "dueDate": "2025-10-05",
+    "status": "Pending"
+}
+
+
+###
+PUT http://localhost:8080/api/tasks/1
+Content-Type: application/json
+
+{
+    "title": "Updated Task Title",
+    "description": "Updated description",
+    "dueDate": "2025-10-10",
+    "status": "In Progress"
+}
+
+###
+DELETE http://localhost:8080/api/tasks/1
