@@ -49,5 +49,5 @@ A simple **Task Management** application built with **Spring Boot**, **Hibernate
 
 1. Clone the repository:
    ```bash
-   git clone <your-repo-url>
+   git clone https://github.com/OdCool27/TaskManager
    cd TaskManager
